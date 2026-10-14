@@ -46,31 +46,21 @@ def save_gif(frames, name, fps=12, bounce=True):
     imageio.mimsave(FIG / name, frames, duration=1000 / fps, loop=0)
 
 
-def conformers(smiles, n=1, seed=0, hs=True):
-    from rdkit import Chem
-    from rdkit.Chem import AllChem
-    mol = Chem.AddHs(Chem.MolFromSmiles(smiles))
-    ids = AllChem.EmbedMultipleConfs(mol, n, randomSeed=seed)
-    AllChem.MMFFOptimizeMoleculeConfs(mol)
-    if not hs:
-        mol = Chem.RemoveHs(mol)
-    X = np.stack([mol.GetConformer(i).GetPositions() for i in range(len(ids))])
-    return mol, X - X.mean(1, keepdims=True)
+
+def laguerre(G, Y, g):
+    from scipy.spatial import cKDTree
+    M = g.max()
+    d, lab = cKDTree(np.c_[Y, np.sqrt(M - g)]).query(np.c_[G, np.zeros(len(G))], workers=-1)
+    return lab, d**2 - M
 
 
-def principal_axes(X):
-    X = X - X.mean(0)
-    return X @ np.linalg.svd(X, full_matrices=False)[2].T
+def semidiscrete(G, rho, Y, b, g=None, tol=0.05, iters=1000):
+    from scipy.optimize import minimize
+    m = len(Y)
 
+    def f(g):
+        lab, v = laguerre(G, Y, g / m)
+        return -m * m * (rho @ v + b @ g / m), m * (np.bincount(lab, rho, m) - b)
 
-def surface_points(mol, X, m, seed=0, scale=1.0):
-    from rdkit import Chem
-    rng = np.random.default_rng(seed)
-    pt = Chem.GetPeriodicTable()
-    r = scale * np.array([pt.GetRvdw(a.GetAtomicNum()) for a in mol.GetAtoms()])
-    k = rng.choice(len(r), 20 * m, p=r**2 / (r**2).sum())
-    u = rng.normal(size=(len(k), 3))
-    p = X[k] + r[k, None] * u / np.linalg.norm(u, axis=1, keepdims=True)
-    d = np.linalg.norm(p[:, None] - X[None], axis=-1)
-    p = p[(d >= r[None] - 1e-6).all(1)]
-    return p[rng.choice(len(p), m, replace=False)]
+    g = np.zeros(m) if g is None else m * g
+    return minimize(f, g, jac=True, method="L-BFGS-B", options={"maxiter": iters, "ftol": 0, "gtol": tol}).x / m

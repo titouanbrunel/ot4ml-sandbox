@@ -23,25 +23,25 @@ Coffee recolored with the palette of an immunohistochemistry slide. Exact OT bet
 
 Style transfer as an OT map between the VGG features of the two images, decoded at intermediate $t$ with the AdaIN decoder of Huang and Belongie. Rows: diagonal Gaussian map (this is AdaIN), full Gaussian map $T(x) = m_1 + A(x - m_0)$ with the Bures solution for $A$, sliced OT map in the 512 dimensional feature space.
 
-## Molecules
+## Playground
 
-<img src="figures/cubane_to_cot.gif" width="260"> <img src="figures/sinkhorn_flow_triptycene.gif" width="260">
+<img src="figures/pixel_shuffle.gif" width="200"> <img src="figures/caustic_lens.gif" width="200"> <img src="figures/stippling.gif" width="200"> <img src="figures/crowd_evacuation.gif" width="200">
 
-![](figures/cubane_to_cot.png)
+![](figures/pixel_shuffle.png)
 
-Cubane to cyclooctatetraene, two valence isomers of C8H8. McCann interpolation between points sampled on shrunken carbon spheres after principal axis alignment. Colors follow the eight cubane carbons.
+The astronaut's pixels rearranged into the cat, colors untouched. Exact assignment on RGB plus a small position term, then every pixel flies in a straight line.
 
-![](figures/sinkhorn_flow_triptycene.png)
+![](figures/caustic_lens.png)
 
-Gaussian noise pushed onto the carbon skeleton surface of triptycene, a three blade paddle, by gradient descent on the Sinkhorn divergence, the particle version of a Sinkhorn generative model.
+A glass slab that draws the cat with sunlight. In the paraxial limit a ray leaving the glass at $x$ hits a screen at distance $sD$ at $(1-s)x + sT(x)$, so the glass height is the Brenier potential of the map from uniform light to the image, up to $|x|^2/2$, and moving the screen is McCann interpolation. Past $D$ the rays cross and caustics appear.
 
-![](figures/fgw_vanillin_eugenol.png)
+![](figures/stippling.png)
 
-Atom correspondence between vanillin and eugenol. W on element features cannot separate carbons, GW on 3D distance matrices ignores elements, fused Gromov Wasserstein uses both.
+The cameraman drawn with 3000 dots. Each iteration solves the semi discrete problem so that every dot gets the same amount of ink, then moves the dots to the centroids of their Laguerre cells, as in blue noise through OT by de Goes et al.
 
-![](figures/equivariant_coupling_linalool.png)
+![](figures/crowd_evacuation.png)
 
-Noise to conformer couplings for 64 linalool conformers, which set how straight flow matching paths are. Mean squared displacement per atom goes from 20.10 Å² with index pairing to 5.34 Å² after Kabsch rotation and per element Hungarian permutation, and to 4.20 Å² with a minibatch OT on top.
+300 people leaving a room with a pillar in front of the door. At each step everyone walks along the geodesic distance to the exit, then the crowd is projected in $W_2$ onto densities at most 1, which gives each person a Laguerre cell capped by a disc (Leclerc, Mérigot, Santambrogio, Stra). The queue at the door comes from the projection alone.
 
 ## Course examples
 
@@ -84,9 +84,9 @@ Gradient descent against Langevin dynamics in a double well. Only the second sam
 ## Structure
 
 ```
-common.py     glyph rasterization, conformers, surface sampling, gif helper
+common.py     glyph rasterization, Laguerre cells, semi discrete solver, gif helper
 visual/       mccann_chess, barycenters_chess, color_transfer, style_transfer_latent
-molecules/    isomer_surfaces, sinkhorn_flow_surface, fgw_matching, equivariant_coupling
+playground/   pixel_shuffle, caustic_lens, stippling, crowd_evacuation
 course/       matching_1d, histogram_equalization, gaussian_geodesic, sinkhorn_epsilon,
               unbalanced, sinkhorn_debiasing, semidiscrete_lloyd, flow_matching_couplings, langevin
 figures/      outputs
