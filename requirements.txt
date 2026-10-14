@@ -1,0 +1,9 @@
+numpy
+scipy
+matplotlib
+imageio
+scikit-image
+pot
+torch
+geomloss
+rdkit
